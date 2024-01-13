@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+      integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.5/axios.min.js"
+      integrity="sha512-TjBzDQIDnc6pWyeM1bhMnDxtWH0QpOXMcVooglXrali/Tj7W569/wd4E8EDjk1CwOAOPSJon1VfcEt1BI4xIrA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <style>
+      .row label {
+        width: 100px;
+        display: inline-block;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <div class="row">
+        <label>Name: </label>
+        <input type="text" name="name" id="name" placeholder="Enter name" />
+      </div>
+      <div class="row">
+        <label>Age: </label>
+        <input type="number" name="age" id="age" placeholder="Enter age" />
+      </div>
+      <div id="frmAction"></div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Age</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="tb-student"></tbody>
+    </table>
+
+    <script>
+      $(document).ready(() => {
+        fetchStudents();
+      });
+      function renderData(data) {
+        let str = "";
+        data.forEach((e) => {
+          str += `
+                <tr >
+                    <td>${e.id}</td>
+                    <td>${e.name}</td>
+                    <td>${e.age}</td>
+                    <td>
+                        <button class="btnEdit" type='button' data-id=${e.id} >Edit</button>
+                        <button class="btnDelete" type='button' data-id=${e.id}  ">Delete</button>
+                    </td>
+                </tr>
+                `;
+        });
+        $("#tb-student").html(str);
+        $(".btnDelete").on("click", function (e) {
+          let id = $(this).data("id");
+          fetchStudentById(id).then((res) => {
+            console.log(res);
+            let student = res.data;
+            let checkConfirm = confirm(`Are you sure delete ${student.name} ?`);
+            if (checkConfirm) {
+              deleteStudentById(id).then((res) => {
+                fetchStudents();
+              });
+            }
+          });
+        });
+        $(".btnEdit").on("click", function (e) {
+          let id = $(this).data("id");
+          fetchStudentById(id).then((res) => {
+            let s = res.data;
+
+            let jGrandFather = $(this).parent().parent();
+            let jName = jGrandFather.find("td:nth-child(2)");
+            let jAge = jGrandFather.find("td:nth-child(3)");
+            let jAction = jGrandFather.find("td:nth-child(4)");
+            jName.html(
+              `<input type="text" class='txtName' value="${s.name}" />`
+            );
+            jAge.html(`<input type="text" class='txtAge' value="${s.age}" />`);
+            jAction.html(
+              `
+                <button class='btnUpdate' type='button'>Update</button>
+                <button class='btnCancel' type='button'>Cancel</button>
+              `
+            );
+
+            jGrandFather.find(".btnUpdate").on("click", function (e) {
+              updateStudent({
+                id: id,
+                name: jGrandFather.find(".txtName").val(),
+                age: jGrandFather.find(".txtAge").val(),
+              });
+            });
+            jGrandFather.find(".btnCancel").on("click", function (e) {
+              jName.text(s.name);
+              jAge.text(s.age);
+              jAction.html(
+                `
+                  <button class="btnEdit" type='button' data-id=${e.id} >Edit</button>
+                  <button class="btnDelete" type='button' data-id=${e.id}  ">Delete</button>
+                `
+              );
+            });
+          });
+        });
+      }
+      function fetchStudents() {
+        axios.get("http://localhost:3000/students").then((res) => {
+          renderData(res.data);
+        });
+      }
+
+      function fetchStudentById(id) {
+        return axios.get(`http://localhost:3000/students/${id}`);
+      }
+      function updateStudent(student) {
+        console.log(student);
+        return axios
+          .put(`http://localhost:3000/students/${student.id}`, student)
+          .then((res) => {
+            fetchStudents();
+          });
+      }
+      function deleteStudentById(id) {
+        return axios.delete(`http://localhost:3000/students/${id}`);
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+      integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <style>
+      .row label {
+        width: 100px;
+        display: inline-block;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <div class="row">
+        <label>Name: </label>
+        <input type="text" name="name" id="name" placeholder="Enter name" />
+      </div>
+      <div class="row">
+        <label>Age: </label>
+        <input type="number" name="age" id="age" placeholder="Enter age" />
+      </div>
+      <div id="frmAction"></div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Age</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="tb-student"></tbody>
+    </table>
+
+    <script>
+      let option = {
+        type: "create",
+        id: "",
+      };
+
+      $(function () {
+        fetchStudents();
+        renderFrmAction();
+      });
+
+      function fetchStudents() {
+        $.ajax({
+          url: "http://localhost:3000/students",
+          type: "GET",
+          dataType: "json",
+          success: function (data) {
+            renderData(data);
+          },
+          error: function (jqXHR, textStatus, errorThrown) {
+            console.log(jqXHR);
+          },
+        });
+      }
+      function fetchStudentById(id) {
+        return $.ajax({
+          url: `http://localhost:3000/students/${id}`,
+          type: "GET",
+        });
+      }
+      function renderData(data) {
+        let str = "";
+        data.forEach((e) => {
+          str += `
+                <tr>
+                    <td>${e.id}</td>
+                    <td>${e.name}</td>
+                    <td>${e.age}</td>
+                    <td>
+                        <button class="btnEdit" type='button' data-id=${e.id} >Edit</button>
+                        <button type='button' onclick="handleShowDelete('${e.id}')">Delete</button>
+                    </td>
+                </tr>
+                `;
+        });
+        $("#tb-student").html(str);
+        $(".btnEdit").on("click", function (e) {
+          let id = $(this).data("id");
+          handleShowEdit(id);
+        });
+      }
+      function handleShowEdit(id) {
+        option.type = "edit";
+        option.id = id;
+        fetchStudentById(id).then(function (data) {
+          $("#name").val(data.name);
+          $("#age").val(data.age);
+        });
+        renderFrmAction();
+      }
+
+      function handleCreateUpdate() {
+        if (option.type == "create") {
+          $.ajax({
+            url: "http://localhost:3000/students",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+              name: $("#name").val(),
+              age: $("#age").val(),
+            }),
+            success: function (data) {
+              console.log("DATA CREATED", data);
+              fetchStudents();
+              resetForm();
+            },
+            error: function (error) {
+              console.error("Error adding student:", error);
+            },
+          });
+        } else {
+          $.ajax({
+            url: `http://localhost:3000/students/${option.id}`,
+            type: "PUT",
+            contentType: "application/json",
+            data: JSON.stringify({
+              name: $("#name").val(),
+              age: $("#age").val(),
+            }),
+            success: function (data) {
+              console.log("DATA UPDATE", data);
+              option.type = "create";
+              option.id = "";
+              fetchStudents();
+              renderFrmAction();
+              resetForm();
+            },
+            error: function (error) {
+              console.error("Error update student:", error);
+            },
+          });
+        }
+      }
+      function handleDelete(id) {
+        $.ajax({
+          url: `http://localhost:3000/students/${id}`,
+          type: "DELETE",
+          success: (data) => {
+            fetchStudents();
+          },
+        });
+      }
+      function renderFrmAction() {
+        let btnCreateEdit = `<button type='button' id='btnCreateUpdate' >
+                                ${option.type == "create" ? "Create" : "Update"}
+                            </button>`;
+        let btnCancel = `
+                ${
+                  option.type == "edit"
+                    ? "<button type='button' id='btnCancel'>Cancel</button>"
+                    : ""
+                }`;
+        $("#frmAction").html(btnCreateEdit + btnCancel);
+
+        $("#btnCreateUpdate").on("click", function (e) {
+          handleCreateUpdate();
+        });
+        $("#btnCancel").on("click", function (e) {
+          handleCancel();
+        });
+      }
+      function handleCancel() {
+        $("#name").val("");
+        $("#age").val("");
+
+        option.type = "create";
+        option.id = "";
+        renderFrmAction();
+      }
+      function handleShowDelete(id) {
+        fetchStudentById(id).done((data) => {
+          let checkDelete = confirm(`You are deleted ${data.name}`);
+          if (checkDelete) {
+            handleDelete(id);
+          }
+        });
+      }
+      function resetForm() {
+        $("#name").val("");
+        $("#age").val("");
+      }
+    </script>
+  </body>
+</html>
