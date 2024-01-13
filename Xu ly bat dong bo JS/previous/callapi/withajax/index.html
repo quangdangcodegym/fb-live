@@ -64,6 +64,25 @@
             console.log(jqXHR);
           },
         });
+        /*
+        $.ajax({
+          url: "http://localhost:3000/students",
+          type: "GET",
+        }).then((res) => {
+          renderData(res);
+        });
+        
+
+        async function load() {
+          let data = await $.ajax({
+            url: "http://localhost:3000/students",
+            type: "GET",
+          });
+
+          renderData(data);
+        }
+        load();
+        */
       }
       function fetchStudentById(id) {
         return $.ajax({
