@@ -1,0 +1,64 @@
+{
+  "posts": [
+    {
+      "id": 1,
+      "title": "json-server",
+      "author": "typicode"
+    },
+    {
+      "title": "QUANG",
+      "author": "kaka",
+      "id": 2
+    },
+    {
+      "title": "QUANG",
+      "author": "kaka",
+      "id": 3
+    },
+    {
+      "title": "QUANG",
+      "author": "kaka",
+      "id": 4
+    },
+    {
+      "title": "QUANG",
+      "author": "kaka",
+      "id": 5
+    },
+    {
+      "title": "QUANG",
+      "author": "kaka",
+      "id": 6
+    },
+    {
+      "id": 100,
+      "title": "QUANG",
+      "author": "kaka"
+    },
+    {
+      "title": "QUANG",
+      "author": "kaka",
+      "id": 101
+    },
+    {
+      "title": "QUANG",
+      "author": "kaka",
+      "id": 102
+    },
+    {
+      "title": "QUANG",
+      "author": "kaka",
+      "id": 103
+    }
+  ],
+  "comments": [
+    {
+      "id": 1,
+      "body": "some comment",
+      "postId": 1
+    }
+  ],
+  "profile": {
+    "name": "typicode"
+  }
+}
